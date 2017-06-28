@@ -1,4 +1,4 @@
-# Envvar
+# Tomlvar
 
 [![Build Status](https://travis-ci.org/dyson/envvar.svg?branch=master)](https://travis-ci.org/dyson/tomlvar)
 [![Coverage Status](https://coveralls.io/repos/github/dyson/tomlvar/badge.svg?branch=master)](https://coveralls.io/github/dyson/tomlvar?branch=master)
