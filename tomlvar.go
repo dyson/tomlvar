@@ -33,20 +33,19 @@ After all tomlvars are defined, call
 	tomlvar.Parse()
 to parse the toml variables into the defined tomlvars.
 
-Envvars may then be used directly. If you're using the tomlvars themselves,
+Tomlvars may then be used directly. If you're using the tomlvars themselves,
 they are all pointers; if you bind to variables, they're values.
 	fmt.Println("ip has value ", *ip)
 	fmt.Println("i has value ", i)
 
-Integer tomlvars accept 1234, 0664, 0x1234 and may be negative.
-Boolean tomlvars may be:
-	1, 0, t, f, T, F, true, false, TRUE, FALSE, True, False
+Integer tomlvars accept 1234, 0664 and may be negative.
+Boolean tomlvars may be true or false.
 Duration tomlvars accept any input valid for time.ParseDuration.
 
 The default set of tomlvars is controlled by top-level functions.
-The TomlVarSet type allows one to define	independent sets of tomlvars,
-which facilitates their independent parsing. The methods of TomlVarSet
-are	analogous to the top-level functions for the default	tomlvar set.
+The TomlVarSet type allows one to define independent sets of tomlvars,
+which facilitates independent config parsing from various sources. The methods of
+TomlVarSet are	analogous to the top-level functions for the default tomlvar set.
 */
 package tomlvar
 
