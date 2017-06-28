@@ -9,10 +9,15 @@ Package tomlvar implements toml variable parsing.
 
 Usage:
 
+Parse a toml config using either Load, LoadFile or LoadReader.
+	import "tomlvar"
+	if err := tomlvar.LoadFile('config.toml'); err != nil {
+		fmt.Println(err)
+	}
+
 Define toml variables using tomlvar.String(), Bool(), Int(), etc.
 
 This declares an integer tomlvar, ENVVARNAME, stored in the pointer ip, with type *int.
-	import "tomlvar"
 	var ip = tomlvar.Int("ENVVARNAME", 1234)
 If you like, you can bind the tomlvar to a variable using the Var() functions.
 	var i int
@@ -21,7 +26,7 @@ If you like, you can bind the tomlvar to a variable using the Var() functions.
 	}
 Or you can create custom tomlvars that satisfy the Value interface (with
 pointer receivers) and couple them to toml variable parsing by
-	tomlvar.Var(&tomlVarVal, "ENVVARNAME", "help message for tomlvar")
+	tomlvar.Var(&tomlVarVal, "ENVVARNAME")
 For such tomlvars, the default value is just the initial value of the variable.
 
 After all tomlvars are defined, call
