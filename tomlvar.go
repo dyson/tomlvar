@@ -77,7 +77,7 @@ func (b *boolValue) Set(path string, config *toml.Tree) error {
 	if !ok {
 		return fmt.Errorf("can't convert \"%v\" (%T) to bool", v1, v1)
 	}
-	*b = boolValue(bool(v2))
+	*b = boolValue(v2)
 	return nil
 }
 
