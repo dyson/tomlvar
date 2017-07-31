@@ -99,6 +99,120 @@ b set by toml var as no flag set: 2
 c set to default value as neither flag or toml var set it: 1
 ```
 
+Here is an example with config reloading on SIGHUP
+```
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+	"time"
+
+	"github.com/dyson/tomlvar"
+)
+
+type config struct {
+	load chan<- bool
+	getA <-chan int
+}
+
+func newConfig() *config {
+	c := new(config)
+	load, getA := make(chan bool), make(chan int)
+	c.load = load
+	c.getA = getA
+	go func(load <-chan bool, getA chan<- int) {
+		a := 0
+		for {
+			select {
+			case <-load:
+				tomlvar.TomlVars = tomlvar.NewTomlVarSet(os.Args[0], tomlvar.ExitOnError)
+
+				tomlvar.IntVar(&a, "letters.a", a)
+
+				path, err := filepath.Abs("./config.toml")
+				if err == nil {
+					if err = tomlvar.LoadFile(path); err == nil {
+						tomlvar.Parse()
+					}
+				}
+				if err != nil {
+					fmt.Printf("skipping config file: %v\n", err)
+				}
+
+			case getA <- a:
+			}
+		}
+	}(load, getA)
+	return c
+}
+
+func main() {
+	fmt.Println("PID:", os.Getpid())
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig)
+
+	done := make(chan bool, 1)
+
+	c := newConfig()
+	c.load <- true
+
+	go func() {
+		for {
+			sigReceived := <-sig
+			switch sigReceived {
+			case os.Interrupt:
+				done <- true
+			case syscall.SIGHUP:
+				fmt.Println("reloading config")
+				c.load <- true
+			}
+		}
+	}()
+
+loop:
+	for {
+		select {
+		case <-done:
+			break loop
+		default:
+			fmt.Println("the value of a is:", <-c.getA)
+			time.Sleep(time.Second)
+		}
+	}
+
+	fmt.Println("exiting")
+}
+```
+And the config.toml in the same directory:
+```
+[letters]
+a = 1
+```
+
+
+Running example:
+```
+go run main.go
+PID: 5427
+the value of a is: 1
+the value of a is: 1
+...
+```
+
+Change the value of `a` in config.toml to 2 and kill -HUP 5427:
+```
+...
+reloading config
+the value of a is: 2
+the value of a is: 2
+^Cexiting
+```
+
 ## Updates against flag
 With tomlvar being so closely related to the flag package it makes sense to keep an eye on it's commits to see what bug fixes, improvements and features should be carried over to tomlvar.
 
