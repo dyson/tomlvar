@@ -1,5 +1,6 @@
 # Tomlvar
 
+[![Go project version](https://badge.fury.io/go/github.com%2Fdyson%2Ftomlvar.svg)](https://badge.fury.io/go/github.com%2Fdyson%2Ftomlvar)
 [![Build Status](https://travis-ci.org/dyson/envvar.svg?branch=master)](https://travis-ci.org/dyson/tomlvar)
 [![Coverage Status](https://coveralls.io/repos/github/dyson/tomlvar/badge.svg?branch=master)](https://coveralls.io/github/dyson/tomlvar?branch=master)
 [![Code Climate](https://codeclimate.com/github/dyson/tomlvar/badges/gpa.svg)](https://codeclimate.com/github/dyson/tomlvar)
