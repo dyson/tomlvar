@@ -109,6 +109,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -116,39 +117,35 @@ import (
 )
 
 type config struct {
-	load chan<- bool
-	getA <-chan int
+	mu sync.RWMutex
+	a  int
 }
 
-func newConfig() *config {
-	c := new(config)
-	load, getA := make(chan bool), make(chan int)
-	c.load = load
-	c.getA = getA
-	go func(load <-chan bool, getA chan<- int) {
-		a := 0
-		for {
-			select {
-			case <-load:
-				tomlvar.TomlVars = tomlvar.NewTomlVarSet(os.Args[0], tomlvar.ExitOnError)
+func (c *config) Load() {
+	a := 0
+	tomlvar.TomlVars = tomlvar.NewTomlVarSet(os.Args[0], tomlvar.ExitOnError)
 
-				tomlvar.IntVar(&a, "letters.a", a)
+	tomlvar.IntVar(&a, "letters.a", a)
 
-				path, err := filepath.Abs("./config.toml")
-				if err == nil {
-					if err = tomlvar.LoadFile(path); err == nil {
-						tomlvar.Parse()
-					}
-				}
-				if err != nil {
-					fmt.Printf("skipping config file: %v\n", err)
-				}
-
-			case getA <- a:
-			}
+	path, err := filepath.Abs("./config.toml")
+	if err == nil {
+		if err = tomlvar.LoadFile(path); err == nil {
+			tomlvar.Parse()
 		}
-	}(load, getA)
-	return c
+	}
+	if err != nil {
+		fmt.Printf("skipping config file: %v\n", err)
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.a = a
+}
+
+func (c *config) getA() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.a
 }
 
 func main() {
@@ -159,8 +156,8 @@ func main() {
 
 	done := make(chan bool, 1)
 
-	c := newConfig()
-	c.load <- true
+	c := new(config)
+	c.Load()
 
 	go func() {
 		for {
@@ -170,7 +167,7 @@ func main() {
 				done <- true
 			case syscall.SIGHUP:
 				fmt.Println("reloading config")
-				c.load <- true
+				c.Load()
 			}
 		}
 	}()
@@ -181,7 +178,7 @@ loop:
 		case <-done:
 			break loop
 		default:
-			fmt.Println("the value of a is:", <-c.getA)
+			fmt.Println("the value of a is:", c.getA())
 			time.Sleep(time.Second)
 		}
 	}
