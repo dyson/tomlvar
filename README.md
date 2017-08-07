@@ -32,9 +32,10 @@ Using go get:
 $ go get github.com/dyson/tomlvar
 ```
 ## Usage
+### Basic
 Usage is essentially the same as the flag package. Here is an example program demonstrating tomlvar and the flag package being used together.
 
-```
+```go
 // example.go
 package main
 
@@ -99,9 +100,9 @@ a set by flag precedence: 3
 b set by toml var as no flag set: 2
 c set to default value as neither flag or toml var set it: 1
 ```
-
+### Live reloading example
 Here is an example with config reloading on SIGHUP
-```
+```go
 package main
 
 import (
